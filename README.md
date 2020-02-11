@@ -12,7 +12,7 @@ Please see the [documentation](https://akap.me/docs) for more in depth material.
 
 This repository contains the AKAP utils source code. Other related repositories:
 
-[AKAP](https://github.com/cfelde/AKAP)
-[AKAP docs](https://github.com/cfelde/AKAP-docs)
-[AKAP browser](https://github.com/cfelde/AKAP-browser)
-[Using AKAP](https://github.com/cfelde/Using-AKAP)
+[AKAP](https://github.com/cfelde/AKAP) <br/>
+[AKAP docs](https://github.com/cfelde/AKAP-docs) <br/>
+[AKAP browser](https://github.com/cfelde/AKAP-browser) <br/>
+[Using AKAP](https://github.com/cfelde/Using-AKAP) <br/>
