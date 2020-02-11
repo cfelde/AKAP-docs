@@ -1,0 +1,34 @@
+site_name: "AKA protocol docs"
+site_description: "The LDAP of Ethereum, for all your eternal storage"
+site_author: "Christian Felde"
+site_url: "https://akap.me"
+
+#repo_name: "cfelde/AKAP"
+#repo_url: "https://github.com/cfelde/AKAP"
+
+copyright: "Copyright &copy; 2020 - Christian Felde"
+
+nav:
+- Introduction: 'index.md'
+- Components: 'components.md'
+- Patterns: 'patterns.md'
+- Contributions: 'contributions.md'
+
+theme:
+  name: "material"
+  language: "en"
+#  logo: "img/logo.png"
+#  favicon: "img/favicon.ico"
+  feature:
+    tabs: true
+  palette:
+    primary: "white"
+    accent: "deep-orange"
+
+extra_css:
+  - "css/extra.css"
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
