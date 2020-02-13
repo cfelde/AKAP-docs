@@ -8,9 +8,9 @@ Here we'll present some of these, together with code examples published on [http
 
 We start with a minimalistic example, one that only uses the AKAP registry contract. It does not rely on anything from AKAP utils.
 
-The full example is available on [https://github.com/cfelde/Using-AKAP/examples/00_Getting_started](https://github.com/cfelde/Using-AKAP/examples/00_Getting_started).
+The full example is available on [Using AKAP -> Getting started](https://github.com/cfelde/Using-AKAP/tree/master/examples/00_Getting_started).
 
-When deploying the [ExampleZero](https://github.com/cfelde/Using-AKAP/examples/00_Getting_started/contracts/ExampleZero) contract, in the constructor, we are doing what's called a node claim:
+When deploying the [ExampleZero](https://github.com/cfelde/Using-AKAP/blob/master/examples/00_Getting_started/contracts/ExampleZero.sol) contract, in the constructor, we are doing what's called a node claim:
 
 ```
 uint parent = 0;
@@ -84,7 +84,7 @@ All they do is pass in a key with value 1 or 2 into the `getValue(..)` function.
 * 1 - node is used by `getValue1()`
 * 2 - and node by `getValue2()`
 
-So far, so good, but how can we read any value from these nodes when the contract doesn't assign any values to them? Well, if you remember, in the constructor, we granted `msg.sender` write access to the node created. If we shift our attention to the [exampleZero.js](https://github.com/cfelde/Using-AKAP/examples/00_Getting_started/test/exampleZero.js) test file, we find among other things this:
+So far, so good, but how can we read any value from these nodes when the contract doesn't assign any values to them? Well, if you remember, in the constructor, we granted `msg.sender` write access to the node created. If we shift our attention to the [exampleZero.js](https://github.com/cfelde/Using-AKAP/tree/master/examples/00_Getting_started/test/exampleZero.js) test file, we find among other things this:
 
 ```
 let value1A = "Value 1 is a string";
@@ -150,6 +150,98 @@ In short, if a node has not been reclaimed for more than 52 weeks the parent nod
 Because only node A has the special root node as its parent, it is only important to reclaim that node. Node 1 and 2 are owned by node A, so they are never at risk of being claimed by others as long as we maintain ownership of node A.
 
 To help with the process we've implemented the reclaim function on our example contract. This function can be called by anyone, and as long as someone calls it often enough, node A remains a property of the contract.
+
+## Domain manager
+
+We're now moving on to the next example, located at [Using AKAP -> Domain manager](https://github.com/cfelde/Using-AKAP/tree/master/examples/01_Domain_manager)
+
+Comparing this to the previous example and you'll recognize most of the code with two primary differences:
+
+* We are using the [Domain Manager](https://github.com/cfelde/AKAP-utils/blob/master/contracts/domain/DomainManager.sol) to manage our node structure
+* We're using some of the [type tools and libraries](https://github.com/cfelde/AKAP-utils/tree/master/contracts/types) to help us with the bytes
+
+So let's walk through the code, firstly looking at the [deployment script](https://github.com/cfelde/Using-AKAP/blob/master/examples/01_Domain_manager/migrations/2_deploy_contracts.js). A lot of the setup is done in there, starting with the domain manager and a random label we create on the fly:
+
+```
+let randomLabel = new Array(32)
+for (let i = 0; i < randomLabel.length; i++) {
+    randomLabel[i] = Math.floor(Math.random() * 256)
+}
+
+console.log("Using random label = " + randomLabel);
+
+let dm = await deployer.deploy(domainManager, akapAddress(network), 0x0, randomLabel);
+```
+
+We don't need to use a random label, but at the same time we don't really care what the label is, as long as we can reference it later. Continuing on, we next obtain the root pointer, which is created from, again, using the special root parent as in the previous example, and our label.
+
+```
+let akapInstance = await akap.at(akapAddress(network));
+let rootPtr = await akapInstance.hashOf(0x0, randomLabel);
+
+console.log("Deployed domain manager, with root pointer = 0x" + rootPtr.toString(16));
+
+let instance = await deployer.deploy(exampleOne, await dm.address, rootPtr);
+```
+
+The last line of the above code deploys our example contract, here called [ExampleOne](https://github.com/cfelde/Using-AKAP/blob/master/examples/01_Domain_manager/contracts/ExampleOne.sol). We give the constructor of the contract the domain manager address and the root pointer. Looking at the contract constructor code we find:
+
+```
+constructor(address _dmAddress, uint _rootPtr) public {
+    dm = DomainManager(_dmAddress);
+    akap = dm.akap();
+    rootPtr = _rootPtr;
+
+    require(akap.exists(rootPtr), "ExampleOne: No root pointer");
+}
+```
+
+As we can see, there's not much going on in there, much less than we had in the previous example. We think this is good, keeping setup code outside the contract itself. Going back to the deployment script, the final thing we do there is to approve the contract as a writer to the nodes. This is done on the domain manager, not the AKAP registry contract. It's important to use the domain manager for any such calls relating to nodes within its domain.
+
+```
+await dm.setApprovalForAll(await instance.address, true);
+```
+
+Taking a step back, the primary difference here, between this example and the previous, is that we externalize responsibility around maintaining nodes and a domain nodes operate within to the domain manager contract. You will for example notice that the ExampleOne contract does not contain a reclaim function, like we had in ExampleZero. Again, this is because we've delegated that sort of functionality to the domain manager, which already gives us a reclaim function out of the box.
+
+Leaving this sort of functionality to a dedicated domain manager, rather than polluting your own contract with administrator features, makes a lot of sense. Using the node structure from the AKAP registry contract allows us to externalize this like we've done here.
+
+Finally a few words on the [type tools](https://github.com/cfelde/AKAP-utils/tree/master/contracts/types). While these don't play a significant role, they help clean up some of the boilerplate code we had in the first example. Converting between bytes, as stored in the node body, and types we want to work with becomes a lot easier. The code looks cleaner, with less distractions. All the assembly code is removed.
+
+```
+function getValue(uint key) public view returns (bytes memory) {
+    uint valueId = akap.hashOf(rootPtr, key.asBytes());
+
+    if (akap.exists(valueId)) {
+        return akap.nodeBody(valueId);
+    } else {
+        return "";
+    }
+}
+
+function getValue1() public view returns (string memory) {
+    return getValue(1).asString();
+}
+
+function getValue2() public view returns (uint) {
+    return getValue(2).asUint256();
+}
+
+function increaseCounter() public {
+    // Read current counter value
+    uint x = akap.nodeBody(rootPtr).asUint256();
+
+    // Increase by 1
+    x += 1;
+
+    // Store the updated counter on node
+    akap.setNodeBody(rootPtr, x.asBytes());
+}
+```
+
+You'll find the type tools being used with calls like `asString()`, `asUint256()`, and `asBytes()`. 
+
+Also take a look at how the [testing](https://github.com/cfelde/Using-AKAP/blob/master/examples/01_Domain_manager/test/exampleOne.js) is done in this example, and compare that to the previous. One major difference is the use of `ConvertUtils`, which allow us to do the same type conversions of the client side. This is still an area in flux, and likely there will be a client side tool in the future so you don't need to reference a contract.
 
 ## More patterns
 
