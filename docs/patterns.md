@@ -196,13 +196,15 @@ constructor(address _dmAddress, uint _rootPtr) public {
 }
 ```
 
-As we can see, there's not much going on in there, much less than we had in the previous example. We think this is good, keeping setup code outside the contract itself. Going back to the deployment script, the final thing we do there is to approve the contract as a writer to the nodes. This is done on the domain manager, not the AKAP registry contract. It's important to use the domain manager for any such calls relating to nodes within its domain.
+As we can see, there's not much going on in there, much less than we had in the previous example. We think this is good, keeping setup code outside the contract itself.
+
+Going back to the deployment script, the final thing we do there is to approve the contract as a writer to the nodes. This is done on the domain manager, not the AKAP registry contract. It's important to use the domain manager for any such calls relating to nodes within its domain.
 
 ```
 await dm.setApprovalForAll(await instance.address, true);
 ```
 
-Taking a step back, the primary difference here, between this example and the previous, is that we externalize responsibility around maintaining nodes and a domain nodes operate within to the domain manager contract. You will for example notice that the ExampleOne contract does not contain a reclaim function, like we had in ExampleZero. Again, this is because we've delegated that sort of functionality to the domain manager, which already gives us a reclaim function out of the box.
+Taking a step back, the primary difference here, between this example and the previous, is that we externalize responsibility around maintaining nodes and the domain nodes operate within to the domain manager contract. You will for example notice that the ExampleOne contract does not contain a reclaim function, like we had in ExampleZero. Again, this is because we've delegated that sort of functionality to the domain manager, which already gives us a reclaim function out of the box.
 
 Leaving this sort of functionality to a dedicated domain manager, rather than polluting your own contract with administrator features, makes a lot of sense. Using the node structure from the AKAP registry contract allows us to externalize this like we've done here.
 
