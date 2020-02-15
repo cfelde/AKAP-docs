@@ -23,7 +23,7 @@ We are passing in two things when doing so:
 1. The parent id, in this case the value zero, meaning we're allocating this node using the special root parent.
 2. A label, in this case a bytes encoding of the contract address, which we can be fairly certain is unused.
 
-We could have used another label, for example one given as a parameter to the constructor itself. That would be up to you as a developer to decide. Use whatever label makes sense to you. Labels are not globally unique, because the parent relationship is also taken into account.
+We could have used another label, for example one given as a parameter to the constructor itself. That would be up to you as a developer to decide. Use whatever label makes sense to you. Labels are not globally unique by themselves, because the parent relationship is also taken into account. The node id is hence a product of both the parent id and the label.
 
 The parent id could also have been non-zero, which would indicate we're giving it the node id of another node. The only requirement is that we are the owner or we are approved on the parent node, so that we can claim a new child node of that parent node.
 
@@ -243,7 +243,7 @@ function increaseCounter() public {
 
 You'll find the type tools being used with calls like `asString()`, `asUint256()`, and `asBytes()`. 
 
-Also take a look at how the [testing](https://github.com/cfelde/Using-AKAP/blob/master/examples/01_Domain_manager/test/exampleOne.js) is done in this example, and compare that to the previous. One major difference is the use of `ConvertUtils`, which allow us to do the same type conversions of the client side. This is still an area in flux, and likely there will be a client side tool in the future so you don't need to reference a contract.
+Also take a look at how the [testing](https://github.com/cfelde/Using-AKAP/blob/master/examples/01_Domain_manager/test/exampleOne.js) is done in this example, and compare that to the previous. One major difference is the use of `ConvertUtils`, allowing us to do the same type conversions on the client side. This is still an area in flux, and likely there will be a client side tool in the future so you don't need to reference a contract.
 
 ## More patterns
 

@@ -22,7 +22,7 @@ We'll return to the specific attributes available on nodes when we look at patte
 
 ## AKAP utils
 
-With the AKAP registry contract is up and running, everyone is free to build on top of it. While there's is nothing wrong with using it directly, we understand that it might often be a bit "low level" to build directly on top of it. Hence, we also make available a set of utilities, tools and similar, which help you leverage the power of the DAG more easily.
+With the AKAP registry contract up and running, everyone is free to build on top of it. While there is nothing wrong with using it directly, we understand that it might often be a bit "low level" to build directly on top of it. Hence, we also make available a set of utilities, tools and similar, which help you leverage the power of the DAG more easily.
 
 Contrary to the AKAP registry contract, which remains a fixed bedrock, AKAP utils is expected to evolve over time. There are no fixed deployments of these utils, and you are instead encouraged to use them more as a library or starting point in your own smart contracts.
 
@@ -38,7 +38,7 @@ The role of the domain manager is to handle the ownership and access rights to a
 
 ![Directed acyclic graph with a domain manager](img/directed-acyclic-graph-2.png)
 
-It's important to understand that nodes are still handled my the same AKAP registry contract, even when using a domain manager. The domain manager only serves as a management layer to make it easier for you to handle multiple nodes together. The domain manager helps you manage what contracts and Ethereum addresses have write access to its group of nodes.
+It's important to understand that nodes are still handled by the same AKAP registry contract, even when using a domain manager. The domain manager only serves as a management layer to make it easier for you to handle multiple nodes together. The domain manager helps you manage what contracts and Ethereum addresses have write access to its group of nodes.
 
 If you have a very complicated set of contracts, where you'd want some contracts to have write access to a set of nodes, and only read access to others, without overlap between themselves, you'd deploy multiple domain managers. While everyone will have read access, only those those contracts with write access would be granted this through the specific domain manager.
 
