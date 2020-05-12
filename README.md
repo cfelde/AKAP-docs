@@ -10,7 +10,7 @@ Please see the [documentation](https://akap.me/docs) for more in depth material.
 
 ## Repositories
 
-This repository contains the AKAP utils source code. Other related repositories:
+This repository contains the AKAP docs. Other related repositories:
 
 [AKAP](https://github.com/cfelde/AKAP) <br/>
 [AKAP docs](https://github.com/cfelde/AKAP-docs) <br/>

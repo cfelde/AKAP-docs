@@ -20,6 +20,12 @@ Before reading about AKAP utils next, and depending on how eager you are to dive
 
 We'll return to the specific attributes available on nodes when we look at patterns.
 
+## AKAF registry contract
+
+The whitepaper goes into some detail around the benefit of a shared registry contract, as a shared reference point for all data. But it does bring with it some dependencies. Specifically it requires you to depend on the expiry behavior in AKAP, which exists because it is a free shared resource. Now while it is not difficult to manage this, it might not be something you are comfortable with for all your registry needs.
+
+For this reason we also provide the [AKAF contract](https://github.com/cfelde/AKAP/blob/master/contracts/AKAF.sol). This contract share the same IAKAP interface and contains the same type of node logic and structure as AKAP. The difference is that nodes never expire, making the reclaim process optional. Also, the special case root node, which doesn't exists in the AKAP registry contract, does exist in the AKAF contract. Hence, the deployer of the AKAF contract can control who is allowed to create child nodes from this root node. The process of creating child nodes under other nodes is otherwise the same as in AKAP.
+
 ## AKAP utils
 
 With the AKAP registry contract up and running, everyone is free to build on top of it. While there is nothing wrong with using it directly, we understand that it might often be a bit "low level" to build directly on top of it. Hence, we also make available a set of utilities, tools and similar, which help you leverage the power of the DAG more easily.
@@ -60,17 +66,39 @@ The AkaProxy contract solves this by relying on AKAP to store the implementation
 
 ### Collections
 
-AKAP utils includes a section for collections. Collections are contracts that provide a specific data structure implementation on top of AKAP, as of which we currently have one.
+AKAP utils includes a section for collections. Collections are contracts that provide a specific data structure implementation on top of AKAP.
 
-#### LinkedHashMap
+#### SimpleMap
 
-The linked hash map implementation can be found on [https://github.com/cfelde/AKAP-utils/blob/master/contracts/collections/LinkedHashMap.sol](https://github.com/cfelde/AKAP-utils/blob/master/contracts/collections/LinkedHashMap.sol).
+The simple map implementation can be found on [https://github.com/cfelde/AKAP-utils/blob/master/contracts/collections/SimpleMap.sol](https://github.com/cfelde/AKAP-utils/blob/master/contracts/collections/SimpleMap.sol).
+
+You would use this if all you need is a simple key value mapping, but with the added benefit of all the features found in AKAP. This includes write access and separation of code and data location.
 
 The following features are supported:
 
 * Get, put, update and remove entries, all with O(1) complexity
-* Enumerate entries in the order they were inserted, either forwards or backwards
 * Manage write access using AKAP / domain manager features
+
+Some limitations apply:
+
+* Keys must conform to the requirements of AKAP node labels, being between 1 and 32 bytes.
+* Because nodes can never be deleted, removing an entry will leave behind a node.
+
+The first of these limitations can be solved with various techniques to shorten your keys, for example hashing. The second isn't really a problem as the actual data on the node left behind is removed. And should the same key be used again on that map, the existing node will be reused.
+
+If you've ever implemented or looked at the implementation of a hash map / dictionary in a "normal language environment" like Java or Python, you will know that the likelihood of a hash collision is high. This is then handled by allowing for multiple slots, so that different entries can share the same hash.
+
+Our SimpleMap is a bit different because we use cryptographic hashes, more specifically the Keccak-256 algorithm, as used to calculate node ids. It is sufficiently statistically unlikely that a map will see a collision, thereby allowing us to avoid the complexity and gas cost of implementing slots.
+
+#### LinkedHashMap
+
+The linked hash map implementation can be found on [https://github.com/cfelde/AKAP-utils/blob/master/contracts/collections/LinkedHashMap.sol](https://github.com/cfelde/AKAP-utils/blob/master/contracts/collections/LinkedHashMap.sol). Compared to the SimpleMap, additional features are supported related to entry enumeration.
+
+The following features are supported:
+
+* Get, put, update and remove entries, all with O(1) complexity
+* Manage write access using AKAP / domain manager features
+* Enumerate entries in the order they were inserted, either forwards or backwards
 
 Some limitations apply:
 
